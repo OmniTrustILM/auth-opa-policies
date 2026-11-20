@@ -2,84 +2,19 @@ name: Test Docker image
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: pr-${{ github.event.pull_request.number || github.ref }}-docker-test
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
-  push_to_registry:
-    name: Build Docker images
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v5
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            czertainly/czertainly-auth-opa-policies
-            3keycompany/czertainly-auth-opa-policies
-            harbor.3key.company/czertainly/czertainly-auth-opa-policies
-          tags: |
-            type=ref,event=tag
-            type=raw,value=develop-latest
-            type=sha,prefix=develop-,format=long
-
-      - name: Test build Docker image
-        id: build-and-load
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64
-          file: ./Dockerfile
-          # Build only the host architecture for the pre-scan build;
-          # --load works only when a single platform is produced.
-          load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Select tag for scanning
-        id: tag
-        run: |
-          FIRST_TAG="$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)"
-          echo "value=$FIRST_TAG" >> "$GITHUB_OUTPUT"
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
-        with:
-          image-ref: ${{ steps.tag.outputs.value }}
-          format: json
-          output: trivy-report.json
-          exit-code: 0
-
-      - name: Upload vulnerability report
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-report
-          path: trivy-report.json
-
-      - name: Fail build on vulnerabilities
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
-        with:
-          image-ref: ${{ steps.tag.outputs.value }}
-          trivy-config: config/trivy.yaml
-          skip-setup-trivy: true
-
-      - name: Build Docker image
-        uses: docker/build-push-action@v6
-        id: build-docker-image
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          file: ./Dockerfile
-          provenance: mode=max
-          sbom: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+  test:
+    uses: OmniTrustILM/.github/.github/workflows/containers-test.yml@main
+    with:
+      image: ilm/auth-opa-policies
+      cache-scope: auth-opa-policies
