@@ -2,12 +2,17 @@ package method
 
 import rego.v1
 
+# For a principal with allowAllResources, Core decides authorized itself, without calling OPA (AllResourcesGrant in
+# OmniTrustILM/core). It asks OPA only when an object of the requested resource has a non-empty deny, so any other
+# way a deny rule or a condition here could refuse a check is bypassed for those principals. Change authorized, any
+# deny rule, or the fields Core reads (allowAllResources, resources[].name, objects[].deny) only together with it.
 authorized if {
 	count(allow) > 0
 	count(deny) == 0
 }
 
 # Allow access when all resources are allowed
+# Core grants checks this rule alone decides without calling OPA; change it only together with AllResourcesGrant.
 allow contains "AllResourcesAllowed" if {
 	input.principal.permissions.allowAllResources == true
 }
@@ -146,6 +151,7 @@ allow contains "Anonymous" if {
 	requestedResource in resourcesWithAnonymousAccess
 }
 
+# Core skips OPA unless an object of the requested resource has a non-empty deny; see the note on authorized.
 # Deny access when requested action is forbidden for given object
 deny contains "ActionDeniedForSpecificObject" if {
 	# requested contains uuids of specific objects
