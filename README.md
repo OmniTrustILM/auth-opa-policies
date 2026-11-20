@@ -1,6 +1,6 @@
-# CZERTAINLY Auth OPA policies
+# ILM Auth OPA policies
 
-> This repository is part of the commercial open source project CZERTAINLY. You can find more information about the project at [CZERTAINLY](https://github.com/CZERTAINLY/CZERTAINLY) repository, including the contribution guide.
+> This repository is part of the commercial open-source project ILM. The [ILM repository](https://github.com/OmniTrustILM/ilm) contains the contribution guide.
 
 This repository contains OPA policies for external evaluation of `Auth` service permissions served for [OPA](https://www.openpolicyagent.org/).
 
@@ -26,7 +26,7 @@ You can find sample input here: [input.json](samples/input.json).
 
 Policies in this repository can be used as a `docker` container which runs `nginx` HTTP server hosting policies acting as HTTP bundle server for OPA agent.
 
-Use the `czertainly/czertainly-auth-opa-policies:tagname` to pull the required image from the repository.
+Pull `hub.omnitrustregistry.com/ilm/auth-opa-policies:<tag>` from the OmniTrust registry, replacing `<tag>` with the release tag you want to deploy.
 
 > **Note**
 > Open policy agent runs as a sidecar for the platform. It exposes the OPA policies locally and automatically synchronize policies.
