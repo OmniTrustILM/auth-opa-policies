@@ -1,0 +1,23 @@
+name: Publish Docker image
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - '*'
+  workflow_dispatch:
+
+concurrency:
+  group: publish-${{ github.ref }}-harbor
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    uses: OmniTrustILM/.github/.github/workflows/containers-build-and-push.yml@main
+    secrets: inherit
+    with:
+      image: ilm/auth-opa-policies
+      cache-scope: auth-opa-policies
