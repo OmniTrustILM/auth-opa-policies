@@ -1,7 +1,7 @@
 # Add build args to allow easy version updates
 ARG NGINX_BUILD_IMAGE=nginx:1.29.2-alpine
 ARG NGINX_RUN_IMAGE=nginx/nginx-unprivileged:1.30.8-alpine
-ARG OPA_IMAGE=openpolicyagent/opa:1.10.0-static@sha256:32f1544858be83d51ba15838ba0fca19235e260a4fb46b52fe3c977f6a131e40
+ARG OPA_IMAGE=openpolicyagent/opa:1.23.0-static@sha256:5eda3af02ff7b2c5f12bbf893a5bdebfde3adb8d6338e7fcf1f37d90b819e88d
 
 FROM ${OPA_IMAGE} AS opa
 
